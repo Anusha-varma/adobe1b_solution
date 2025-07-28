@@ -2,116 +2,113 @@
 ---
 
 ```markdown
-# 🧠 Adobe India Hackathon 2025 - Round 1B Submission
+# 🧠 Adobe India Hackathon 2025 – Round 1B Solution
 
-## 📌 Project Title
-**Persona-Based Document Insight Extractor**
+## 👩‍💻 Problem Statement: Persona-Driven Document Intelligence
 
----
-
-## 🎯 Objective
-
-The objective of this project is to build a **persona-aware document understanding system** that extracts and ranks the most relevant sections from PDF documents based on a given persona and task. This system helps different stakeholders quickly access the most pertinent information tailored to their roles.
+This solution extracts relevant sections from a set of PDFs based on a given *persona* and *task*. It uses an LLM-based pipeline to:
+- Segment the documents into headings
+- Score them using persona-task relevance
+- Return the top-ranked sections per document in structured JSON format.
 
 ---
 
-## 🔁 Input Understanding
+## 🗂️ Directory Structure
 
-The system accepts:
-
-- A **persona** (e.g., Legal Advisor, Project Manager)
-- A **task description** (e.g., "review compliance clauses", "identify budget overrun risks")
-- A folder containing **multiple PDF documents**
-
-The input is provided as a structured JSON, and the PDFs are parsed for analysis.
-
----
-
-## 🧩 Outline Extraction
-
-We use a hybrid pipeline with options for both **mocked outline extraction** and **real text extraction** (for Round 1B, we have a working text extractor). It:
-- Extracts headings and subheadings using PDFMiner and regex heuristics
-- Cleans and formats the text into a list of outlined chunks
-
----
-
-## 🧠 Ranking Method
-
-Each chunk of extracted text is ranked based on its relevance to the persona and task using:
-
-- A **sentence-transformer** (`all-MiniLM-L6-v2`) to generate embeddings
-- **Cosine similarity** to score each section against the combined persona + task query
-
-The top `k` most relevant chunks are returned in ranked order.
-
----
-
-## 🧑‍💼 Handling Persona + Task
-
-We construct a unified semantic query:
 ```
 
-[Persona]: [Task]
-
-```
-This combined query ensures contextual relevance. For example:
-```
-
-"Legal Advisor: Review compliance clauses related to data usage"
+adobe1b\_solution/
+├── input/                  # Folder containing input PDF documents
+│   └── doc1.pdf
+├── output/                 # Folder to store output JSON results
+├── sample\_input/           # Contains input JSON describing persona, task, etc.
+│   └── input.json
+├── main.py                 # Entry-point script
+├── utils.py                # Core pipeline utilities
+├── Dockerfile              # For containerized execution
+└── requirements.txt        # Python dependencies
 
 ````
 
-This query is then compared with all document sections to find the most semantically relevant ones.
-
 ---
 
-## ⚙️ Setup Instructions (Docker)
+## 🚀 Run Using Docker
 
-### 1. Clone this repo:
+Make sure Docker is installed and running.
+
+### 1. Build the Docker Image
 ```bash
-git clone https://github.com/your-username/adobe-hackathon-25.git
-cd adobe-hackathon-25
+docker build --platform linux/amd64 -t outline_extractor:latest .
 ````
 
-### 2. Build the Docker image:
+### 2. Run the Container
 
 ```bash
-docker build --platform linux/amd64 -t adobe_outline_extractor:anusha .
+docker run -v $(pwd)/input:/app/input \
+           -v $(pwd)/output:/app/output \
+           -v $(pwd)/sample_input:/app/sample_input \
+           outline_extractor:latest
 ```
 
-### 3. Run the container:
+---
+
+## 🔧 Run Locally (Without Docker)
+
+Make sure you have **Python 3.9+** installed.
+
+### 1. Install Dependencies
 
 ```bash
-docker run -it --rm adobe_outline_extractor:anusha
+pip install -r requirements.txt
+```
+
+### 2. Run the Pipeline
+
+```bash
+python main.py --input_json sample_input/input.json --input_dir input --output_dir output
 ```
 
 ---
 
-## 📦 Folder Structure
+## 📥 Sample Input Format
 
-```
-.
-├── main.py                 # Main entry point
-├── utils.py                # PDF and text extraction functions
-├── approach_explanation.md # Summary of method
-├── sample_input.json       # Sample input for testing
-├── Dockerfile              # Container config
+```json
+{
+  "persona": "Environmental Researcher",
+  "task": "Investigate the environmental impacts of mining",
+  "documents": ["doc1.pdf"]
+}
 ```
 
 ---
 
-## ✅ Assumptions
+## 📤 Output Format
 
-* PDFs are mostly structured with consistent headings and subheadings
-* The persona and task provided are semantically aligned with document content
-* Sentence-transformer model is sufficient for relevance scoring
+```json
+{
+  "doc1.pdf": [
+    {
+      "heading": "Mining Effects on Biodiversity",
+      "text": "The environmental impact of mining includes erosion, loss of biodiversity...",
+      "score": 0.84
+    }
+  ]
+}
+```
 
 ---
 
-## ⚠️ Limitations & Future Improvements
+## 🧪 Testing Tips
 
-* Headings are detected via regex; may fail for poorly formatted PDFs
-* Ranking is purely semantic — no metadata or section type weighting
-* No OCR support yet (for scanned/image-based PDFs)
-* Can be enhanced with LLMs for abstractive summarization or zero-shot QA
+* Ensure all PDFs are placed in the `input/` folder.
+* Modify `sample_input/input.json` to include the document names you're using.
+* Output will be saved in `output/output.json`.
 
+
+
+---
+
+```
+
+Let me know if you also want me to auto-generate a clean `.gitignore` or a downloadable version of this `README.md`.
+```
