@@ -106,9 +106,3 @@ python main.py --input_json sample_input/input.json --input_dir input --output_d
 
 
 
----
-
-```
-
-Let me know if you also want me to auto-generate a clean `.gitignore` or a downloadable version of this `README.md`.
-```
